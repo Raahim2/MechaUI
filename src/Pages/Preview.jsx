@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
 import * as AllIcons from 'react-icons/fi';
-import '../CSS/Chat.css';
+import '../CSS/chat.css';
 
 export const PreviewPage = () => {
     const { id } = useParams();
