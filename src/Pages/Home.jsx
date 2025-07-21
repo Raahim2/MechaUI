@@ -1,7 +1,4 @@
 import '../CSS/home.css'
-// const API_KEY = process.env.REACT_APP_API;
-
-
 
 
 function Home() {
