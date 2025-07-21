@@ -1,0 +1,771 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --sidebar-bg: #000000;
+  --main-bg: #121212;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --accent-color: #f97316; /* Changed from green to orange */
+  --element-bg: #2a2a2a;
+  --border-color: #333333;
+  --error-color: #ef4444;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--main-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--accent-color);
+  border-radius: 8px;
+  color: black;
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 0 12px;
+}
+
+.new-chat-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background-color: var(--sidebar-bg);
+  border: 1.5px solid var(--accent-color);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background-color 0.2s;
+}
+
+.new-chat-button:hover {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+.new-chat-button svg {
+    color: var(--accent-color);
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: var(--element-bg);
+  color: var(--text-primary);
+}
+
+/* --- Main Content --- */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #121212;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.welcome-message {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* --- Chat History --- */
+.chat-history {
+  flex-grow: 1;
+  padding: 24px 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-message {
+  display: flex;
+  gap: 16px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.chat-message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-message.model {
+  align-self: flex-start;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.message-content {
+  background-color: var(--element-bg);
+  padding: 16px 20px;
+  border-radius: 12px;
+  max-width: calc(100% - 52px);
+}
+.chat-message.user .message-content {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+
+.message-content p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 15px;
+  white-space: pre-wrap; /* To respect newlines from API */
+}
+
+/* --- Code Block Styles --- */
+.code-container {
+    background-color: #0d1117;
+    border-radius: 8px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+.code-header {
+    background-color: #161b22;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+.code-container pre {
+    margin: 0 !important;
+    padding: 16px !important;
+    font-size: 14px;
+}
+
+/* --- Chat Input Area --- */
+.chat-input-area {
+  padding: 12px 40px 24px;
+  flex-shrink: 0;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--element-bg);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.chat-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 15px;
+  padding: 8px;
+  margin: 0 8px;
+}
+
+.chat-input::placeholder { color: var(--text-secondary); }
+.chat-input:disabled { background-color: transparent; }
+
+.icon-button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.icon-button:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.icon-button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* --- New Styles --- */
+.error-message {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--error-color);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 800px;
+    margin: 8px auto;
+}
+
+.typing-indicator {
+  width: 50px;
+  height: 20px;
+  position: relative;
+}
+.typing-indicator::after, .typing-indicator::before, .typing-indicator span {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  animation: typing 1.5s infinite;
+}
+.typing-indicator::before { left: 0; animation-delay: 0s; }
+.typing-indicator span { left: 15px; animation-delay: 0.2s; }
+.typing-indicator::after { left: 30px; animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+.image-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+.remove-image-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--element-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.input-options {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.css-option-btn {
+    background-color: var(--element-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.css-option-btn.active {
+    background-color: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 40px;
+}
+
+.start-content {
+    max-width: 600px;
+    width: 100%;
+}
+
+.start-content h1 {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+}
+
+.start-content .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 40px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(249, 115, 22, 0.05);
+}
+
+.upload-area.has-image {
+    padding: 10px;
+    border-style: solid;
+}
+
+.start-image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.start-content h2 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.tech-stack-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.tech-option-btn {
+    background-color: var(--element-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.tech-option-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.tech-option-btn.active {
+    background-color: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+
+.generate-button {
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.generate-button:hover:not(:disabled) {
+    background-color: #fb923c; /* A lighter orange for hover */
+}
+
+.generate-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Chat Image Preview Style --- */
+.chat-image-preview {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+}
+
+
+.code-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #161b22;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.code-language {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.code-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.code-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.code-action-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+    background-color: var(--element-bg);
+}
+
+
+/* --- Preview Page Styles --- */
+
+.preview-page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full viewport height */
+    overflow: hidden; /* Prevent the main page from scrolling */
+    background-color: #1a1a2e; /* A dark background for the page */
+}
+
+/* 2. Give the header a fixed height */
+.preview-header {
+    flex-shrink: 0; /* Prevent the header from shrinking */
+    background-color: #162447;
+    border-bottom: 1px solid #1f4068;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-header h1 {
+    color: #e43f5a;
+    font-size: 1.5rem;
+}
+
+/* 3. Make the main content area fill the remaining space */
+.preview-main-split {
+    flex-grow: 1; /* This is crucial! */
+    display: flex;
+    overflow: hidden; /* Prevent this container from overflowing */
+}
+
+/* 4. Style the two columns (preview and code) */
+.preview-render-area,
+.preview-code-area {
+    flex: 1; /* Each column takes up 50% of the width */
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden; /* Hide overflow for the column itself */
+    border-left: 1px solid #1f4068;
+}
+
+.preview-render-area {
+    border-left: none;
+}
+
+.preview-area-title {
+    flex-shrink: 0; /* Prevent titles from shrinking */
+    margin-bottom: 1rem;
+    color: #e43f5a;
+}
+
+/* 5. Make the ACTUAL content inside the columns scrollable */
+.preview-frame,
+.live-editor {
+    flex-grow: 1; /* Allow these elements to fill the available space */
+    overflow: auto; /* THIS IS THE KEY: Add a scrollbar when content overflows */
+    border: 1px solid #1f4068;
+    border-radius: 8px;
+    background-color: #162447;
+}
+
+/* Ensure the react-live editor itself has a proper height */
+.live-editor > pre {
+    height: 100%;
+}
+
+/* Style for the preview frame */
+.preview-frame {
+    padding: 1rem;
+    background-color: #ffffff; /* Give preview a white background */
+}
+
+.preview-error-box {
+    margin-top: 1rem;
+    flex-shrink: 0;
+}
+
+.back-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.preview-main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    overflow: auto;
+}
+
+.preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.code-preview-container {
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+}
+
+.code-preview-container h2 {
+    margin-bottom: 8px;
+}
+
+.code-preview-container p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+/* Make code containers on preview page have a max-height */
+.code-preview-container .code-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.preview-page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #1e1e1e; /* A slightly lighter dark color */
+    color: var(--text-primary);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--main-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.preview-header h1 { margin: 0; font-size: 1.2rem; }
+.back-link { color: var(--accent-color); text-decoration: none; font-weight: 500; }
+
+.preview-main-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100vh - 65px); /* Full height minus header */
+    overflow: hidden;
+}
+
+.preview-render-area, .preview-code-area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-render-area {
+    background-color: #f7fafc; /* Light background for preview contrast */
+    padding: 20px;
+}
+
+.preview-code-area {
+    background-color: #0d1117;
+}
+
+.preview-area-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    padding: 0 10px;
+    color: var(--text-secondary);
+}
+
+.preview-render-area .preview-area-title {
+    color: #4a5568;
+}
+
+.preview-frame {
+    flex-grow: 1;
+    border-radius: 8px;
+    overflow: auto;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+/* React-Live specific styles */
+.live-editor {
+    height: 100%;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 14px !important;
+}
+
+.css-title {
+    margin-top: 10px;
+}
+
+.css-editor {
+    height: 200px !important; /* Fixed height for CSS editor */
+    flex-shrink: 0;
+}
+
+.preview-error-box {
+    margin-top: 10px;
+    background-color: #fff5f5;
+    border: 1px solid #f56565;
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    color: #c53030;
+    white-space: pre-wrap;
+    font-size: 12px;
+}
+
+.full-page-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 1. The scrollbar itself */
+::-webkit-scrollbar {
+  width: 12px;  /* Width of the vertical scrollbar */
+  height: 12px; /* Height of the horizontal scrollbar */
+}
+
+/* 2. The track (the part the scrollbar moves along) */
+::-webkit-scrollbar-track {
+  background: #1e1e24; /* A very dark, almost black background for the track */
+}
+
+/* 3. The thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: #4a4a52;    /* A dark gray for the thumb */
+  border-radius: 20px;       /* Rounded corners for the thumb */
+  border: 3px solid #1e1e24; /* Creates a "padding" effect around the thumb */
+}
+
+/* 4. The thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6c6c74; /* Make the thumb slightly lighter on hover */
+}
+
+
+/* This works for Firefox */
+/* The 'html' selector is sufficient here */
+html {
+  scrollbar-width: thin; /* Can be "auto", "thin", or "none" */
+  scrollbar-color: #4a4a52 #1e1e24; /* thumb-color track-color */
+}
