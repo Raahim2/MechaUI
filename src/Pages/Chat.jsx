@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import '../CSS/Chat.css';
+import '../CSS/chat.css';
 
 // Import icons and components
 import { FiEdit, FiPlus, FiLogOut, FiSend, FiMic } from 'react-icons/fi';
