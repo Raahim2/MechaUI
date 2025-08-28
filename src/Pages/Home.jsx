@@ -1,7 +1,35 @@
 import '../CSS/home.css'
 
 
-function Home() {
+// src/pages/Home.js or wherever your file is located
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient'; 
+import '../CSS/home.css'; 
+export default function Home() {
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUserSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkUserSession();
+  }, [navigate]); // The effect depends on the navigate function
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#030303]"></div>; 
+  }
+
+  
+
   
 
   return (
@@ -26,7 +54,7 @@ function Home() {
           <div className="right-nav">
             <div className="nav-button-wrap">
               <a
-                href="/chat"
+                href="/login"
                 className="button-arrow w-variant-004d8508-565d-37f9-39ad-0523bc228eff w-inline-block"
                 data-wf--button-arrow--variant="button-arrow-white"
               >
@@ -84,7 +112,7 @@ function Home() {
               >
                 <a
                  
-                  href="/chat"
+                  href="/login"
                   className="button-arrow w-inline-block"
                   ><div className="button-text">Try Mecha AI</div>
                   <img
@@ -891,4 +919,3 @@ Automatically generate responsive layouts that work across devices and screen si
   );
 }
 
-export default Home;

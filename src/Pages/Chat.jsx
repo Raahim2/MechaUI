@@ -1,206 +1,236 @@
-import React, { useState, useRef, useEffect } from 'react';
-import '../CSS/chat.css';
+// src/components/Chat.js
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { FiUploadCloud, FiSend, FiCopy, FiEye, FiX, FiUser, FiCpu } from 'react-icons/fi';
 
-// Import icons and components
-import { FiEdit, FiPlus, FiLogOut, FiSend, FiMic } from 'react-icons/fi';
-import { StartScreen } from '../Components/StartScreen';
-import { ChatMessage } from '../Components/ChatMessage';
-
-// --- IMPORTANT: Paste your Gemini API Key here ---
+// Get the API key from environment variables
 const API_KEY = import.meta.env.VITE_API;
+const genAI = new GoogleGenerativeAI(API_KEY);
 
-
-function Chat() {
-    const [isChatActive, setIsChatActive] = useState(false);
-    const [chatHistory, setChatHistory] = useState([]);
-    const [inputValue, setInputValue] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const chatEndRef = useRef(null);
-
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [chatHistory, isLoading]);
-
-    const handleStartChat = async (imageFile, imagePreview, techStack) => {
-        if (!imageFile || !techStack) return;
-        if (API_KEY === "YOUR_GEMINI_API_KEY" ) {
-            setError("Please add your Gemini API Key to start.");
-            return;
-        }
-        setIsLoading(true);
-        setError('');
-        const firstUserMessage = {
-            role: 'user',
-            content: `Convert this image to a component using ${techStack.label}.`,
-            imagePreviewUrl: imagePreview
-        };
-        setChatHistory([firstUserMessage]);
-        setIsChatActive(true);
-        try {
-            const base64Data = await fileToBase64(imageFile);
-            const modelResponseText = await callGeminiAPI(firstUserMessage.content, base64Data, imageFile.type, []);
-            const modelMessage = { role: 'model', content: modelResponseText };
-            setChatHistory(prev => [...prev, modelMessage]);
-        } catch (e) {
-            console.error(e);
-            setError(`Error: ${e.message}`);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleSendMessage = async () => {
-        if (!inputValue.trim() || isLoading) return;
-        const newUserMessage = { role: 'user', content: inputValue };
-        const newHistory = [...chatHistory, newUserMessage];
-        setChatHistory(newHistory);
-        setInputValue('');
-        setIsLoading(true);
-        setError('');
-        try {
-            const modelResponseText = await callGeminiAPI(inputValue, null, null, chatHistory);
-            const modelMessage = { role: 'model', content: modelResponseText };
-            setChatHistory(prev => [...prev, modelMessage]);
-        } catch (e) {
-            console.error(e);
-            setError(`Error: ${e.message}`);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    // Centralized function to call the Gemini API
-    const callGeminiAPI = async (text, base64Data, mimeType, historyContext) => {
-        const modelName = "gemini-1.5-flash";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
-        
-        const userParts = [];
-        if (base64Data) {
-            // *** NEW, MUCH STRICTER SYSTEM PROMPT ***
-            const systemPrompt = `You are an expert front-end developer. Your primary goal is to create React component code that is 100% self-contained and immediately renderable in a live preview sandbox.
-
-Follow these rules with extreme care:
-
-1.  **No External Dependencies:**
-    *   Do NOT import or require any other npm packages, libraries, or files. (e.g., no icon library , lodash, moment, axios, material-ui, etc.).
-
-2.  **Handle Images with Placeholders:**
-    *   The user has uploaded an image for you to replicate. If the UI in that image contains its own images (like logos, user avatars, product photos), you MUST NOT use local paths (e.g., '/logo.svg', '../assets/image.png').
-    *   Instead, you MUST use a placeholder service. For generic images, use 'https://via.placeholder.com/150'. For user avatars, use 'https://i.pravatar.cc/40'. Or, you can represent them with styled 'div's or simple SVGs.
-
-3.  **Focus on Static UI:**
-    *   Prioritize creating a visually accurate, static representation of the UI.
-    *   Avoid complex state ('useState', 'useReducer') unless it is absolutely essential for a simple, self-contained UI interaction (like a dropdown or toggle). The code should primarily be JSX and styling.
-
-4.  **Code Format:**
-    *   The final output must ONLY be code.
-    *   Wrap the React/JSX code in a \`\`\`jsx markdown block.
-    *   If you generate separate CSS, wrap it in a \`\`\`css markdown block.
-    *   Do NOT include any explanations, introductions, or closing remarks.
-
-User's specific request: "${text}"`;
-
-            userParts.push({ text: systemPrompt });
-            userParts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
-        } else {
-            userParts.push({ text });
-        }
-
-        const contents = historyContext.map(msg => ({
-            role: msg.role,
-            parts: [{ text: msg.content }]
-        }));
-        contents.push({ role: 'user', parts: userParts });
-
-        const payload = { contents };
-
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error.message || "API request failed");
-        }
-        
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
-    };
-    
-    const fileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
-    return (
-        <div className="chat-container">
-            <aside className="sidebar">
-                 <div>
-                    <div className="sidebar-header">
-                        <div className="logo"><FiEdit size={24} /></div>
-                        <h1 className="app-title">Mecha AI</h1>
-                    </div>
-                    <button className="new-chat-button" onClick={() => {
-                        setIsChatActive(false);
-                        setChatHistory([]);
-                        setError('');
-                    }}>
-                        <FiPlus size={18} /><span>New Conversion</span>
-                    </button>
-                </div>
-                <div className="logout-section">
-                    <a href="#logout" className="nav-link"><FiLogOut size={20} /><span>Log Out</span></a>
-                </div>
-            </aside>
-
-            <main className="main-content">
-                {!isChatActive ? (
-                    <StartScreen onStart={handleStartChat} isLoading={isLoading} error={error} />
-                ) : (
-                    <>
-                        <header className="chat-header">
-                            <h2 className="welcome-message">Mecha UI</h2>
-                            <img src="https://cdn.prod.website-files.com/6794ac644ed360d5530891ce/67a0614d8af8f263184dee28_logo-icon.svg" alt="User Avatar" className="user-avatar" />
-                        </header>
-                        <section className="chat-history">
-                            {chatHistory.map((msg, index) => <ChatMessage key={index} role={msg.role} content={msg.content} imagePreviewUrl={msg.imagePreviewUrl} />)}
-                            {isLoading && (
-                                <div className="chat-message model">
-                                     <img src="https://cdn.prod.website-files.com/6794ac644ed360d5530891ce/67a0614d8af8f263184dee28_logo-icon.svg" alt="AI Avatar" className="message-avatar" />
-                                     <div className="message-content"><div className="typing-indicator"></div></div>
-                                </div>
-                            )}
-                            {error && <div className="error-message">{error}</div>}
-                            <div ref={chatEndRef} />
-                        </section>
-                        <footer className="chat-input-area">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    className="chat-input"
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="Ask for changes or refinements..."
-                                    disabled={isLoading}
-                                />
-                                <button className="icon-button" onClick={handleSendMessage} disabled={isLoading || !inputValue}><FiSend size={20} /></button>
-                                <button className="icon-button" disabled={isLoading}><FiMic size={20} /></button>
-                            </div>
-                        </footer>
-                    </>
-                )}
-            </main>
-        </div>
-    );
+// Helper function to convert a File object to a GoogleGenerativeAI.Part object.
+async function fileToGenerativePart(file) {
+  const base64EncodedDataPromise = new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+  return {
+    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+  };
 }
 
-export default Chat;
+// Sub-component to render the model's response, handling special code blocks
+const ModelResponse = ({ content, projectId }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const codeBlockRegex = /```html\n([\s\S]*?)\n```/;
+  const codeMatch = content.match(codeBlockRegex);
+
+  // If the response is just plain text without a code block
+  if (!codeMatch) {
+    return <p className="whitespace-pre-wrap">{content}</p>;
+  }
+
+  const beforeCode = content.split(codeBlockRegex)[0];
+  const code = codeMatch[1].trim();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      {beforeCode && <p className="mb-4 whitespace-pre-wrap">{beforeCode}</p>}
+      <div className="bg-[#030303] border border-gray-700 rounded-lg">
+        <div className="flex justify-between items-center px-4 py-2 border-b border-gray-700">
+          <span className="text-xs font-semibold text-gray-400">HTML + Tailwind CSS</span>
+          <div className="flex gap-3">
+            <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-colors">
+              <FiCopy size={12}/> {isCopied ? 'Copied!' : 'Copy'}
+            </button>
+            <Link to={`/preview/${projectId}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-colors">
+              <FiEye size={12}/> Preview
+            </Link>
+          </div>
+        </div>
+        <pre className="p-4 overflow-x-auto text-sm"><code>{code}</code></pre>
+      </div>
+    </div>
+  );
+};
+
+
+// --- Main Chat Component ---
+export default function Chat() {
+  const [user, setUser] = useState(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const chatEndRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Effect for authenticating the user and protecting the route
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+      } else {
+        navigate('/login');
+      }
+    };
+    checkUser();
+  }, [navigate]);
+  
+  // Effect for auto-scrolling to the latest message
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory, isLoading]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if ((!currentMessage.trim() && !image) || isLoading) return;
+
+    const userMessageContent = currentMessage;
+    const userMessage = { role: 'user', content: userMessageContent, image: imagePreview };
+    setChatHistory(prev => [...prev, userMessage]);
+    
+    // Reset inputs immediately for a snappy UI feel
+    setCurrentMessage('');
+    setImage(null);
+    setImagePreview('');
+    setIsLoading(true);
+
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      
+      const promptParts = [
+        ...chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n'),
+        `user: ${userMessageContent}`,
+        `
+        SYSTEM PROMPT: You are an expert Tailwind CSS developer.
+        - If the user asks for a UI component from an image or description, provide ONLY the raw HTML code for it inside a single \`\`\`html code block.
+        - If the user asks for a change to previous code or a general question, respond in plain text, or provide the full updated code in an html block.
+        - NEVER add explanations outside the code block if you are providing code. The user wants to copy and paste directly.
+        `
+      ];
+      
+      if (image) {
+        const imagePart = await fileToGenerativePart(image);
+        promptParts.push(imagePart);
+      }
+      
+      const result = await model.generateContent(promptParts);
+      const response = await result.response;
+      let text = response.text();
+
+      // Check if the response contains code and save it to Supabase to get an ID
+      const codeBlockRegex = /```html\n([\s\S]*?)\n```/;
+      const codeMatch = text.match(codeBlockRegex);
+      let projectId = null;
+
+      if (codeMatch && codeMatch[1]) {
+        const extractedCode = codeMatch[1].trim();
+        const { data, error } = await supabase
+          .from('projects')
+          .insert({ code: extractedCode, user_id: user.id, name: 'Untitled Component' })
+          .select('id')
+          .single();
+        
+        if (error) {
+            console.error('Supabase insert error:', error);
+            throw new Error('Failed to save project to database.');
+        }
+        projectId = data.id;
+      }
+      
+      setChatHistory(prev => [...prev, { role: 'model', content: text, projectId }]);
+
+    } catch (err) {
+      console.error(err);
+      setChatHistory(prev => [...prev, { role: 'model', content: 'Sorry, I encountered an error. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  if (!user) return null; // Or a full-screen loader
+
+  return (
+    <div className="min-h-screen bg-[#030303] text-white font-sans flex flex-col">
+      <header className="sticky top-0 bg-[#030303]/80 backdrop-blur-md border-b border-gray-800 z-50">
+        <nav className="container mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
+          <Link to="/dashboard">
+            <img src={'/mecha.svg'} alt="Mecha Logo" className="h-9 w-auto" />
+          </Link>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-400 hidden sm:block">{user.email}</span>
+            <Link to="/dashboard" className="px-4 py-2 text-sm font-semibold text-gray-300 hover:text-white bg-[#1a1a1a] rounded-md transition-colors">
+              Dashboard
+            </Link>
+          </div>
+        </nav>
+      </header>
+      
+      <main className="flex-grow container mx-auto p-4 lg:p-6 flex flex-col max-h-[calc(100vh-69px)]">
+        {/* Chat History */}
+        <div className="flex-grow overflow-y-auto space-y-8 pr-2">
+          {chatHistory.map((msg, index) => (
+            <div key={index} className={`flex gap-4 items-start ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'model' && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#f25f30] flex items-center justify-center"><FiCpu /></div>}
+              <div className={`max-w-xl lg:max-w-3xl rounded-lg p-4 ${msg.role === 'user' ? 'bg-[#1a1a1a]' : 'bg-transparent'}`}>
+                {msg.image && <img src={msg.image} alt="User upload" className="rounded-lg mb-2 max-h-64" />}
+                <ModelResponse content={msg.content} projectId={msg.projectId} />
+              </div>
+              {msg.role === 'user' && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center"><FiUser /></div>}
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex gap-4 items-start justify-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#f25f30] flex items-center justify-center animate-pulse"><FiCpu /></div>
+              <div className="max-w-xl rounded-lg p-4 bg-transparent">
+                 <div className="h-2 w-16 bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Chat Input Form */}
+        <div className="flex-shrink-0 pt-4">
+          <form onSubmit={handleSendMessage} className="relative bg-[#1a1a1a] border border-gray-700 rounded-lg p-2 flex items-center gap-2 focus-within:border-[#f25f30] transition-colors">
+            {imagePreview && (
+              <div className="relative ml-1">
+                <img src={imagePreview} className="h-12 w-12 rounded-md object-cover" alt="Preview"/>
+                <button type="button" onClick={() => {setImage(null); setImagePreview('')}} className="absolute -top-1.5 -right-1.5 p-0.5 bg-red-600 rounded-full text-white hover:bg-red-500"><FiX size={12}/></button>
+              </div>
+            )}
+            <label htmlFor="file-upload" className="p-2 text-gray-400 hover:text-white cursor-pointer transition-colors"><FiUploadCloud size={20}/></label>
+            <input id="file-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            <input
+              type="text"
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              placeholder="Describe the component, upload an image, or ask for changes..."
+              className="flex-grow bg-transparent focus:outline-none px-2 text-white placeholder-gray-500"
+            />
+            <button type="submit" disabled={isLoading || (!currentMessage.trim() && !image)} className="p-2 bg-[#f25f30] rounded-md text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"><FiSend size={20}/></button>
+          </form>
+        </div>
+      </main>
+    </div>
+  );
+}
