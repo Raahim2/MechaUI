@@ -11,7 +11,7 @@ const Showcase = () => {
     views: "15.2k",
     stack: ["react", "tailwind"],
     imageUrl: "https://placehold.co/600x400/7e22ce/FFFFFF/png?text=Hero",
-    redirect: "hero-section",
+    redirect: "",
   },
   {
     name: "Interactive Login Form",
@@ -19,7 +19,7 @@ const Showcase = () => {
     views: "11.8k",
     stack: ["react", "tailwind", "html"],
     imageUrl: "https://placehold.co/600x400/16a34a/FFFFFF/png?text=Login",
-    redirect: "login-form",
+    redirect: "",
   },
   {
     name: "Animated Pricing Table",
@@ -27,7 +27,7 @@ const Showcase = () => {
     views: "22.1k",
     stack: ["html", "tailwind", "css"],
     imageUrl: "https://placehold.co/600x400/be123c/FFFFFF/png?text=Pricing",
-    redirect: "pricing-table",
+    redirect: "",
   },
   {
     name: "Glassmorphism Dashboard",
@@ -35,7 +35,7 @@ const Showcase = () => {
     views: "8.9k",
     stack: ["react", "tailwind", "css"],
     imageUrl: "https://placehold.co/600x400/0284c7/FFFFFF/png?text=Dashboard",
-    redirect: "glass-dashboard",
+    redirect: "",
   },
   {
     name: "Parallax Feature Grid",
@@ -43,7 +43,7 @@ const Showcase = () => {
     views: "19.4k",
     stack: ["react", "tailwind"],
     imageUrl: "https://placehold.co/600x400/c2410c/FFFFFF/png?text=Features",
-    redirect: "feature-grid",
+    redirect: "",
   },
 ];
 
